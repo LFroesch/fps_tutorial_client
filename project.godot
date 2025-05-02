@@ -1,0 +1,32 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="FPS Udemy Server"
+run/main_scene="uid://dhycvx2wpe3pu"
+config/features=PackedStringArray("4.4", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+Server="*res://server/server.tscn"
+
+[global_group]
+
+SpawnPoints=""
+
+[layer_names]
+
+3d_physics/layer_1="environment"
+3d_physics/layer_2="player"
+3d_physics/layer_3="hitbox"
+3d_physics/layer_4="player_dummy"
+3d_physics/layer_5="environment_exact"
