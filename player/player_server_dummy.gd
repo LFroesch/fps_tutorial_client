@@ -41,7 +41,7 @@ func set_anim(anim_name : String, anim_pos : float) -> void:
 	animation_player.pause()
 
 func set_rot_x_visuals(rot_x : float) -> void:
-	var rot_weight := remap(rot_x, -PI/2.0, PI/2.0, 0, 1)
+	var rot_weight := remap(rot_x, -PI/2.0, PI/2.0, 0, 0.7)
 	# neck
 	var q_neck := skeleton.get_bone_pose_rotation(bone_neck)
 	q_neck.x = lerp_angle(NECK_ROT_SCALAR[0], NECK_ROT_SCALAR[1], rot_weight)

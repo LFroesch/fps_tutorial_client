@@ -6,6 +6,7 @@ const MAX_HEALTH := 100
 
 var current_health := MAX_HEALTH
 var lobby : Lobby
+var grenades_left := 2
 
 @onready var animation_player: AnimationPlayer = %AnimationPlayer
 
@@ -14,13 +15,14 @@ func set_anim(anim_name : String) -> void:
 		return
 	animation_player.play(anim_name, ANIM_BLEND_TIME)
 
-func change_health(amount : int) -> void:
+func change_health(amount : int, maybe_damage_dealer : int = 0) -> void:
 	current_health = clampi(current_health + amount, 0, MAX_HEALTH)
 	
 	if current_health <= 0:
-		die()
+		die(maybe_damage_dealer)
 	
 	lobby.update_health(name.to_int(), current_health, MAX_HEALTH, amount)
 		
-func die() -> void:
+func die(killer_id : int) -> void:
 	print(name, " died")
+	lobby.player_died(name.to_int(), killer_id)

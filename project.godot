@@ -19,9 +19,10 @@ config/icon="res://icon.svg"
 
 Server="*res://server/server.tscn"
 
-[global_group]
+[display]
 
-SpawnPoints=""
+window/size/viewport_width=960
+window/size/viewport_height=540
 
 [layer_names]
 

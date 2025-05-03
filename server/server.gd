@@ -2,7 +2,7 @@ extends Node
 
 const PORT := 7777
 const MAX_CLIENTS := 64
-const MAX_LOBBIES := 1
+const MAX_LOBBIES := 4
 const MAX_PLAYERS_PER_LOBBY := 2
 const DISTANCE_BETWEEN_LOBBIES := 100
 
@@ -47,11 +47,9 @@ func remove_client_from_lobby(client_id : int) -> void:
 		lobby_clients_updated(maybe_lobby)
 		
 		if maybe_lobby.client_data.keys().is_empty():
-			lobbies.erase(maybe_lobby)
-			maybe_lobby.queue_free()
-			update_lobby_spots()
+			delete_lobby(maybe_lobby)
 	
-	print("%s Client (%d) Disconnected from Lobby (%s)" % [_get_time_string(), client_id, maybe_lobby.name])
+	#print("%s Client (%d) Disconnected from Lobby (%s)" % [_get_time_string(), client_id, maybe_lobby.name])
 
 func update_lobby_spots() -> void:
 	# Inserting new lobbies
@@ -149,3 +147,8 @@ func c_get_server_clock_time(client_clock_time : int) -> void:
 @rpc("authority", "call_remote", "unreliable_ordered")
 func s_return_server_clock_time(server_clock_time : int, old_client_clock_time : int) -> void:
 	pass
+
+func delete_lobby(lobby : Lobby) -> void:
+	lobbies.erase(lobby)
+	lobby.queue_free()
+	update_lobby_spots()
