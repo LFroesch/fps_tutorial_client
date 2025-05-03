@@ -17,6 +17,7 @@ const ARM_Y_ROT_SCALAR : PackedFloat32Array = [-0.39, -1.25]
 @onready var head: Node3D = $Head
 
 var hitboxes : Array[RID] = []
+var id : int
 
 func _ready() -> void:
 	for bone in skeleton.get_children():

@@ -117,7 +117,7 @@ func spawn_players() -> void:
 			spawn_tform = red_spawn_points[0].transform
 			red_spawn_points.pop_front()
 		
-		spawn_server_player(ready_clients[i], spawn_tform)
+		spawn_server_player(ready_clients[i], spawn_tform, team)
 		
 		for ready_client_id in ready_clients:
 			s_spawn_player.rpc_id(
@@ -129,17 +129,20 @@ func spawn_players() -> void:
 				client_data.get(ready_clients[i]).weapon_id
 			)
 
-func spawn_server_player(client_id : int, spawn_tform : Transform3D):
+func spawn_server_player(client_id : int, spawn_tform : Transform3D, team : int):
 	var server_player_real := preload("res://player/player_server_real.tscn").instantiate()
 	var server_player_dummy := preload("res://player/player_server_dummy.tscn").instantiate()
 	server_player_real.name = str(client_id)
 	server_player_dummy.name = str(client_id) + "_dummy"
 	server_player_real.global_transform = spawn_tform
+	server_player_real.lobby = self
+	server_player_dummy.id = client_id
 	add_child(server_player_real, true)
 	add_child(server_player_dummy, true)
 	server_players[client_id] = {}
 	server_players[client_id].real = server_player_real
 	server_players[client_id].dummy = server_player_dummy
+	client_data[client_id].team = team
 		
 @rpc("authority", "call_remote", "reliable")
 func s_spawn_player(client_id: int, spawn_tform : Transform3D, team : int, player_name : String, weapon_id : int):
@@ -241,6 +244,15 @@ func calculate_shot_results(shooter_id : int, time_stamp : int, player_data : Di
 		if result.is_empty():
 			return
 		if result.collider is HitBox:
+			var hurt_client_id = result.collider.player.id
+			
+			if not server_players.has(hurt_client_id):
+				continue # if dead 
+			if client_data.get(shooter_id).team == client_data.get(hurt_client_id).team:
+				continue # if friendly fire
+			var hurt_server_player : PlayerServerReal = server_players.get(hurt_client_id).real
+			var health_change = -weapon_data.damage * result.collider.damage_multiplier
+			hurt_server_player.change_health(health_change)
 			#print(result.collider.player.name + " hit by bullet")
 			spawn_bullet_hit_fx(result.position - global_position, result.normal, 1)
 		else:
@@ -257,4 +269,12 @@ func s_spawn_bullet_hit_fx(pos: Vector3, normal : Vector3, type: int) -> void:
 
 @rpc("authority", "call_remote", "unreliable")
 func s_play_shoot_fx(target_client_id : int) -> void:
+	pass
+
+func update_health(target_client_id : int, current_health : int, max_health : int, changed_amount: int) -> void:
+	for client_id in client_data.keys():
+		s_update_health.rpc_id(client_id, target_client_id, current_health, max_health, changed_amount)
+		
+@rpc("authority", "call_remote", "unreliable_ordered")
+func s_update_health(target_client_id : int, current_health : int, max_health : int, changed_amount: int) -> void:
 	pass
