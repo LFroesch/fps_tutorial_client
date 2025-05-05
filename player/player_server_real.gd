@@ -26,3 +26,7 @@ func change_health(amount : int, maybe_damage_dealer : int = 0) -> void:
 func die(killer_id : int) -> void:
 	print(name, " died")
 	lobby.player_died(name.to_int(), killer_id)
+
+func update_grenades_left(new_amount : int) -> void:
+	grenades_left = new_amount
+	lobby.update_grenades_left(name.to_int(), grenades_left)

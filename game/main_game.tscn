@@ -1,3 +1,9 @@
 [gd_scene format=3 uid="uid://dhycvx2wpe3pu"]
 
 [node name="MainGame" type="Node"]
+
+[node name="Camera3D" type="Camera3D" parent="."]
+
+[node name="Label3D" type="Label3D" parent="Camera3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1.4312)
+text = "Server Status : ON"

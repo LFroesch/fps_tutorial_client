@@ -13,15 +13,17 @@ class_name Grenade
 var lobby : Lobby
 
 var direction : Vector3
-var thrower : PlayerServerReal
+var thrower_id : int
 
 func set_data(_lobby : Lobby, _direction : Vector3, _thrower : PlayerServerReal) -> void:
 	lobby = _lobby
 	direction = _direction
-	thrower = _thrower
+	thrower_id = _thrower.name.to_int()
 	
 func _ready() -> void:
-	add_collision_exception_with(thrower)
+	var thrower = lobby.server_players.get(thrower_id).real if lobby.server_players.has(thrower_id) else null
+	if thrower:
+		add_collision_exception_with(thrower)
 	apply_central_impulse(direction * throw_impulse_strength)
 	
 	var explosion_area_shape := SphereShape3D.new()
@@ -33,7 +35,9 @@ func _ready() -> void:
 	
 	await get_tree().create_timer(1).timeout
 	
-	remove_collision_exception_with(thrower)
+	thrower = lobby.server_players.get(thrower_id).real if lobby.server_players.has(thrower_id) else null
+	if thrower:
+		remove_collision_exception_with(thrower)
 	
 func _on_self_destruct_timer_timeout() -> void:
 	explode()
@@ -47,6 +51,6 @@ func explode() -> void:
 			0,
 			max_damage
 		)
-		player.change_health(-damage, thrower.name.to_int())
+		player.change_health(-damage, thrower_id)
 		
 	lobby.grenade_exploded(self)

@@ -5,7 +5,7 @@ const WORLD_STATE_SEND_FRAME := 3
 const WORLD_STATES_TO_REMEMBER := 60
 const DEATH_COOLDOWN_LENGTH := 2
 const MATCH_LENGTH_SEC := 300
-const TEAM_SCORE_TO_WIN := 15
+const TEAM_SCORE_TO_WIN := 5
 
 enum {
 	IDLE,
@@ -395,7 +395,7 @@ func player_died(dead_player_id : int, killer_id : int) -> void:
 	
 	client_data.get(dead_player_id).deaths += 1
 	if dead_player_id != killer_id:
-		client_data.get(dead_player_id).kills += 1
+		client_data.get(killer_id).kills += 1
 	
 	for client_id in client_data.keys():
 		s_player_died.rpc_id(client_id, dead_player_id)
@@ -468,7 +468,7 @@ func c_try_throw_grenade(player_state : Dictionary) -> void:
 	if player.grenades_left <= 0:
 		return
 		
-	player.grenades_left -= 1
+	player.update_grenades_left(player.grenades_left - 1)
 	s_update_grenades_left.rpc_id(client_id, player.grenades_left)
 	
 	var grenade : Grenade = preload("res://player/grenade/grenade.tscn").instantiate()
@@ -482,6 +482,9 @@ func c_try_throw_grenade(player_state : Dictionary) -> void:
 	grenade.name = str(grenade.get_instance_id())
 	add_child(grenade, true)
 	grenades[grenade.name] = grenade
+
+func update_grenades_left(client_id : int, amount : int) -> void:
+	s_update_grenades_left.rpc_id(client_id, amount)
 	
 @rpc("authority", "call_remote", "unreliable_ordered")
 func s_update_grenades_left(grenades_left : int) -> void:
@@ -490,8 +493,11 @@ func s_update_grenades_left(grenades_left : int) -> void:
 func grenade_exploded(grenade : Grenade) -> void:
 	var grenade_name = grenade.name
 	
-	grenades.erase(grenade_name)
-	current_world_state.gr.erase(grenade_name)
+	if grenades.has(grenade_name):
+		grenades.erase(grenade_name)
+	if current_world_state.gr.has(grenade_name):
+		current_world_state.gr.erase(grenade_name)
+		
 	grenade.queue_free()
 	
 	for client_id in client_data.keys():
